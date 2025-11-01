@@ -20,10 +20,10 @@ MonoBehaviour:
     Hit: {fileID: 0}
     Victory: {fileID: 0}
   heroSkillsData:
-    passiveSkillData: {fileID: 0}
-    activeSkill1: {fileID: 0}
-    activeSkill2: {fileID: 0}
-    ultimateSkill: {fileID: 0}
+    passiveSkillData: {fileID: 11400000, guid: 5240f45edfb4899458a951a09aed5f26, type: 2}
+    activeSkill1: {fileID: 11400000, guid: c9051f65952befe47ab25031c5f2f969, type: 2}
+    activeSkill2: {fileID: 11400000, guid: e551fb594e18d79439d2e28c1e143a6c, type: 2}
+    ultimateSkill: {fileID: 11400000, guid: 8448626337a6b8a4aaff444ff877cea2, type: 2}
   heroBaseStats:
     baseHP: 9500
     baseAttack: 830

@@ -1,7 +1,9 @@
 ﻿using Core.Heroes;
+using Core.Heroes.Skills;
 using Services.AssetServices;
 using Services.StaticDataServices;
 using UI;
+using UI.CardInBattle;
 using UI.CardInMenu;
 using UI.CardUI;
 using UnityEngine;
@@ -45,6 +47,12 @@ namespace Services.FactoryServices
                 _assetProvider.Instantiate<PurificationCard>(AssetPath.PurificationCardPath, container);
 
             return purificationCard;
+        }
+
+        public SkillCard CreateSkillCard(RectTransform container)
+        {
+            SkillCard skillCard = _assetProvider.Instantiate<SkillCard>(AssetPath.SkillCardPath, container);
+            return skillCard;
         }
     }
 }

@@ -10,11 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 13cc4b871e064269937d3b34c5bfc26c, type: 3}
-  m_Name: Attack2
+  m_Name: PassiveSkill
   m_EditorClassIdentifier: 
   skillType: 0
-  skillIcon: {fileID: 21300000, guid: 7d46805f88b99a24dbba4da43f7f52c3, type: 3}
-  effectCategory: 0
+  skillIcon: {fileID: 21300036, guid: 8b8333c8af9b0c54da038fe9102febb5, type: 3}
   skillTypeIcon: {fileID: 21300000, guid: 70e07ab1b9f326b4bae30fe839d609ea, type: 3}
   skillName: "\u0420\u0443\u0431\u044F\u0449\u0438\u0439 \u0443\u0434\u0430\u0440"
   visualEffectPrefab: {fileID: 0}
@@ -22,19 +21,17 @@ MonoBehaviour:
   iconConfig: {fileID: 11400000, guid: 9cca3614002f13945b6fe60faccb0194, type: 2}
   skillLevels:
   - rarity: 0
-    damageModifier: 1
-    extraPenetration: 0
-    isCritical: 0
+    damageModifier: 0
+    effectCategory: 0
+    description: 
     effects: []
   - rarity: 1
     damageModifier: 0
-    extraPenetration: 0
-    isCritical: 0
+    effectCategory: 0
+    description: 
     effects: []
   - rarity: 2
     damageModifier: 0
-    extraPenetration: 0
-    isCritical: 0
+    effectCategory: 0
+    description: 
     effects: []
-  description: 
-  targetAll: 0

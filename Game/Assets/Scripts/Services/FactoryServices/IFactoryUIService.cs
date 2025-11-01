@@ -1,5 +1,6 @@
 ﻿using Core.Heroes;
 using UI;
+using UI.CardInBattle;
 using UI.CardInMenu;
 using UI.CardUI;
 using UnityEngine;
@@ -14,5 +15,6 @@ namespace Services.FactoryServices
         public HeroCard CreateHeroCard(RectTransform heroListContainer, HeroData heroData,
             CardSelectionManager cardSelectionManager);
         public PurificationCard CreatePurificationCard(RectTransform transform);
+        public SkillCard CreateSkillCard(RectTransform container);
     }
 }

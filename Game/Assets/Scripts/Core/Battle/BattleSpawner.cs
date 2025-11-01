@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Core.Heroes;
 using Services.FactoryServices;
 using Services.SaveLoadServices;
 using Services.StaticDataServices;
 using UnityEngine;
-using UnityEngine.Serialization;
 using VContainer;
+using Random = UnityEngine.Random;
 
 namespace Core.Battle
 {
@@ -25,28 +26,32 @@ namespace Core.Battle
         [Header("Компоненты")] 
         [SerializeField]
         private BattleController battleController;
+        
+        [SerializeField] 
+        private Transform playerHeroContainer;
+        [SerializeField] 
+        private Transform aiHeroContainer;
 
         private IStaticDataService _staticDataService;
         private ISaveLoadService _saveLoadService;
         private IGameFactoryService _gameFactory;
         
-        private List<Hero> playerHeroes = new List<Hero>();
-        private List<Hero> aiHeroes = new List<Hero>();
-        
+        private List<Hero> _playerHeroes = new();
+        private List<Hero> _aiHeroes = new();
+
         public event Action<List<Hero>, List<Hero>> OnHeroesSpawned;
 
         [Inject]
         public void Construct(IStaticDataService staticDataService, IGameFactoryService iGameFactoryService,
-            ISaveLoadService saveLoadService)
+            IFactoryUIService factoryUIService, ISaveLoadService saveLoadService)
         {
             _staticDataService = staticDataService;
             _saveLoadService = saveLoadService;
             _gameFactory = iGameFactoryService;
+            battleController.Construct(factoryUIService,this);
 
             LevelSpawn();
             SpawnHeroes();
-            
-            battleController.Construct(this);
         }
 
         private void LevelSpawn()
@@ -64,6 +69,21 @@ namespace Core.Battle
                 Debug.LogError("ArenaConfig.arenaPrefab не задан!");
                 return;
             }
+        }
+        
+        public Hero GetRandomLivingHero(List<Hero> whoseHeroes)
+        {
+            List<Hero> livingHeroes =
+                whoseHeroes.Where(hero => hero.IsAlive()).ToList();
+        
+            if (livingHeroes.Count == 0)
+            {
+                Debug.LogWarning("Нет живых героев в списке!");
+                return null;
+            }
+            
+            int randomIndex = Random.Range(0, livingHeroes.Count);
+            return livingHeroes[randomIndex];
         }
 
         private void SpawnHeroes()
@@ -94,10 +114,11 @@ namespace Core.Battle
                         }
                         
                         Hero hero = _gameFactory.CreateHero(heroData, upgradeData, playerSpawnPoints[i]);
+                        hero.transform.SetParent(playerHeroContainer);
                         hero.SetHeroTeam(HeroTeam.Player);
 
                         if (hero != null)
-                            playerHeroes.Add(hero);
+                            _playerHeroes.Add(hero);
                     }
                 }
             }
@@ -111,14 +132,15 @@ namespace Core.Battle
                 if (aiHeroData != null)
                 {
                     Hero aiHero = _gameFactory.CreateHero(aiHeroData, aiUpgrade, aiSpawnPoints[i]);
+                    aiHero.transform.SetParent(aiHeroContainer);
                     aiHero.SetHeroTeam(HeroTeam.AI);
                     
                     if (aiHero != null)
-                        aiHeroes.Add(aiHero);
+                        _aiHeroes.Add(aiHero);
                 }
             }
 
-            OnHeroesSpawned?.Invoke(playerHeroes, aiHeroes);
+            OnHeroesSpawned?.Invoke(_playerHeroes, _aiHeroes);
         }
     }
 }

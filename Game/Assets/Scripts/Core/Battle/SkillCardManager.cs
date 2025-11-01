@@ -1,81 +1,110 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Collections.Generic;
 using Core.Heroes;
 using Core.Heroes.Skills;
 using DG.Tweening;
+using Services.FactoryServices;
 using UI.CardInBattle;
+using UnityEngine.Serialization;
+using Random = UnityEngine.Random;
 
 namespace Core.Battle
 {
 
 public class SkillCardManager : MonoBehaviour
 {
-    public GameObject cardPrefab; // Prefab SkillCard
-    public Transform handContainer; // UI-контейнер для карт (HorizontalLayoutGroup)
-    public Vector2 spawnStartPos = new Vector2(0, -500); // Центр-низ
-    public Vector2 spawnEndPos = new Vector2(400, -400); // Правый-низний угол
-    public float spawnDuration = 0.5f;
-    public float spreadDistance = 100f; // Расстояние между картами
-
-    private List<SkillCard> hand = new List<SkillCard>();
-    private int maxCards = 8; // Зависит от героев
-    private BattleController _battleController; // Ссылка для отслеживания героев
+    [SerializeField]
+    private SkillCard skillCardPf;
+    [SerializeField] 
+    private RectTransform handContainer;
+    [SerializeField]
+    private Vector2 spawnStartPos = new Vector2(0, -500);
+    [SerializeField] 
+    private float spawnDuration = 0.25f;
+    [SerializeField]
+    private float spreadDistance = 100f; // Расстояние между картами
+    
+    private IFactoryUIService _factoryUI;
+    private BattleSpawner _battleSpawner;
     private SkillExecutor _skillExecutor;
     private TargetSelector _targetSelector;
 
-    public void Construct(BattleController battleController, SkillExecutor skillExecutor, TargetSelector targetSelector)
+    private List<SkillCard> _hand = new List<SkillCard>();
+    private List<Hero> _allPlayerHero;
+    private List<Hero> _allAiHero;
+    
+    private int _maxCards = 8; // Зависит от героев
+
+    private void Awake()
     {
-        _battleController = battleController;
+        _allPlayerHero = new List<Hero>();
+        _allAiHero = new List<Hero>();
+    }
+
+    public void Construct(IFactoryUIService factoryUIService,BattleSpawner battleSpawner, SkillExecutor skillExecutor,
+        TargetSelector targetSelector)
+    {
+        _factoryUI = factoryUIService;
+        _battleSpawner = battleSpawner;
         _skillExecutor = skillExecutor;
         _targetSelector = targetSelector;
+
+        _battleSpawner.OnHeroesSpawned += HeroChanged;
         
         SpawnInitialCards();
     }
-    
-    public void SpawnInitialCards()
+
+    private void HeroChanged(List<Hero> playerHeroes, List<Hero> aiHeroes)
     {
-        hand.Clear();
-    
-        var allHeroes = _battleController.GetAllHeroesPlayer(); // Предполагаю, это твой метод
-    
-        foreach (var hero in allHeroes)
+        _allPlayerHero = playerHeroes;
+        _allAiHero = aiHeroes;
+    }
+
+    private void SpawnInitialCards()
+    {
+        _hand.Clear();
+        
+        foreach (var hero in _allPlayerHero)
         {
+            Debug.Log(hero.name);
+            
             var skillData = hero.GetHeroSkillData(); // Получаем данные навыков героя
             // Спавним по одной Bronze-карте на каждый активный навык (2 шт)
             SpawnCard(hero, skillData.activeSkill1, SkillRarity.Bronze);
             SpawnCard(hero, skillData.activeSkill2, SkillRarity.Bronze);
         }
+        
         ArrangeCards();
     }
 
     // Спавн одной карты с анимацией
     private void SpawnCard(Hero hero, Skill skill, SkillRarity rarity)
     {
-        var cardObj = Instantiate(cardPrefab, handContainer);
-        var card = cardObj.GetComponent<SkillCard>();
-        card.owner = hero;
-        card.skill = skill;
-        card.rarity = rarity;
-        card.level = (int)rarity + 1; // Bronze=1, Silver=2, Gold=3
-        hand.Add(card);
+        int level = (int)rarity + 1; // Bronze=1, Silver=2, Gold=3;
+        SkillCard card = _factoryUI.CreateSkillCard(handContainer);
+        card.Construct(this,hero, skill, level);
+        
+        _hand.Add(card);
 
         // Анимация: от центра-низа к позиции в руке
-        card.rectTransform.anchoredPosition = spawnStartPos;
-        card.rectTransform.DOAnchorPos(CalculateCardPosition(hand.Count - 1), spawnDuration).SetEase(Ease.OutBack);
+        card.GetRectTransform().anchoredPosition = spawnStartPos;
+        card.GetRectTransform().DOAnchorPos(CalculateCardPosition(_hand.Count - 1), spawnDuration).
+            SetEase(Ease.OutBack);
     }
 
     // Расположить карты в руке (с spread)
     private void ArrangeCards()
     {
-        for (int i = 0; i < hand.Count; i++)
+        for (int i = 0; i < _hand.Count; i++)
         {
-            hand[i].rectTransform.DOAnchorPos(CalculateCardPosition(i), 0.3f);
+            _hand[i].GetRectTransform().DOAnchorPos(CalculateCardPosition(i), 0.3f);
         }
     }
 
     private Vector2 CalculateCardPosition(int index)
     {
-        float totalWidth = (hand.Count - 1) * spreadDistance;
+        float totalWidth = (_hand.Count - 1) * spreadDistance;
         float startX = -totalWidth / 2;
         return new Vector2(startX + index * spreadDistance, 0);
     }
@@ -83,20 +112,22 @@ public class SkillCardManager : MonoBehaviour
     // Мерж: удалить 2, добавить 1 upgraded
     public void MergeCards(SkillCard card1, SkillCard card2)
     {
-        if (card1.rarity == SkillRarity.Gold) return; // Gold не мержатся
+        if (card1.GetRarity() == SkillRarity.Gold)
+            return; // Gold не ранк апаются
 
         // +1 ОД герою
-        card1.owner.ultimatePoints = Mathf.Min(card1.owner.ultimatePoints + 1, 5);
+        card1.GetOwner().ultimatePoints = Mathf.Min(card1.GetOwner().ultimatePoints + 1, 5);
 
         // Удалить карты
-        hand.Remove(card1);
-        hand.Remove(card2);
+        _hand.Remove(card1);
+        _hand.Remove(card2);
+        
         Destroy(card1.gameObject);
         Destroy(card2.gameObject);
 
         // Добавить upgraded
-        SkillRarity newRarity = card1.rarity == SkillRarity.Bronze ? SkillRarity.Silver : SkillRarity.Gold;
-        SpawnCard(card1.owner, card1.skill, newRarity);
+        SkillRarity newRarity = card1.GetRarity() == SkillRarity.Bronze ? SkillRarity.Silver : SkillRarity.Gold;
+        SpawnCard(card1.GetOwner(), card1.GetSkill(), newRarity);
 
         // Докинуть рандомные, если нужно
         FillHand();
@@ -105,25 +136,25 @@ public class SkillCardManager : MonoBehaviour
     // Swap: поменять местами и +1 ОД
     public void SwapCards(SkillCard card1, SkillCard card2)
     {
-        card1.owner.ultimatePoints = Mathf.Min(card1.owner.ultimatePoints + 1, 5);
+        card1.GetOwner().ultimatePoints = Mathf.Min(card1.GetOwner().ultimatePoints + 1, 5);
 
         // Поменять позиции в списке и на экране
-        int index1 = hand.IndexOf(card1);
-        int index2 = hand.IndexOf(card2);
-        hand[index1] = card2;
-        hand[index2] = card1;
+        int index1 = _hand.IndexOf(card1);
+        int index2 = _hand.IndexOf(card2);
+        _hand[index1] = card2;
+        _hand[index2] = card1;
 
         // Анимировать swap
-        card1.rectTransform.DOAnchorPos(CalculateCardPosition(index2), 0.2f);
-        card2.rectTransform.DOAnchorPos(CalculateCardPosition(index1), 0.2f);
+        card1.GetRectTransform().DOAnchorPos(CalculateCardPosition(index2), 0.2f);
+        card2.GetRectTransform().DOAnchorPos(CalculateCardPosition(index1), 0.2f);
     }
 
     // Заполнить руку рандомными картами до макс
     private void FillHand()
     {
-        while (hand.Count < maxCards)
+        while (_hand.Count < _maxCards)
         {
-            var randomHero = _battleController.GetRandomLivingHero(_battleController.GetAllHeroesPlayer());
+            var randomHero = _battleSpawner.GetRandomLivingHero(_allPlayerHero);
             var skillData = randomHero.GetHeroSkillData();
             // Выбираем случайно между activeSkill1 и activeSkill2
             int randomIndex = Random.Range(0, 2); // 0 или 1
@@ -137,7 +168,7 @@ public class SkillCardManager : MonoBehaviour
     // Обновить макс карт при смерти героя (вызывай из BattleController)
     public void UpdateMaxCards(int livingHeroesCount)
     {
-        maxCards = livingHeroesCount switch
+        _maxCards = livingHeroesCount switch
         {
             4 => 8,
             3 => 7,
@@ -156,9 +187,14 @@ public class SkillCardManager : MonoBehaviour
         //_targetSelector.StartTargeting(card.skill, card.owner, (targets) => {
       //      _skillExecutor.ExecuteSkill(card.owner, card.skill, card.rarity, targets);
             
-            hand.Remove(card);
+            _hand.Remove(card);
             Destroy(card.gameObject);
             FillHand();
+    }
+
+    private void OnDestroy()
+    {
+        _battleSpawner.OnHeroesSpawned -= HeroChanged;
     }
 }
 }

@@ -2,6 +2,8 @@
 using System.Linq;
 using Core.Heroes;
 using Core.Heroes.Skills;
+using Services.FactoryServices;
+using UI.CardInBattle;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -11,7 +13,10 @@ namespace Core.Battle
     {
         [SerializeField]
         private TargetSelector targetSelector;
+        [SerializeField] 
+        private SkillCardManager skillCardManager;
         
+        private IFactoryUIService _factoryUI;
         private BattleSpawner _battleSpawner;
         private SkillExecutor _skillExecutor;
         
@@ -20,11 +25,19 @@ namespace Core.Battle
 
         private void Awake()
         {
+            _playerHeroes = new List<Hero>();
+            _aiHeroes = new List<Hero>();
+            
             _skillExecutor = new SkillExecutor();
             _battleSpawner.OnHeroesSpawned += InitializeHeroes;
         }
-        public void Construct(BattleSpawner battleSpawner) =>
+        public void Construct(IFactoryUIService factoryUIService, BattleSpawner battleSpawner)
+        {
+            _factoryUI = factoryUIService;
             _battleSpawner = battleSpawner;
+            
+            skillCardManager.Construct(_factoryUI,_battleSpawner, _skillExecutor, targetSelector);
+        }
 
         private void InitializeHeroes(List<Hero> playerHeroes, List<Hero> aiHeroes)
         {
@@ -55,23 +68,7 @@ namespace Core.Battle
             }
         }
 
-        private void OnDestroy() => _battleSpawner.OnHeroesSpawned -= InitializeHeroes;
-
-        public List<Hero> GetAllHeroesPlayer() => _playerHeroes;
-
-        public Hero GetRandomLivingHero(List<Hero> whoseHeroes)
-        {
-            List<Hero> livingHeroes =
-                    whoseHeroes.Where(hero => hero.IsAlive()).ToList();
-        
-            if (livingHeroes.Count == 0)
-            {
-                Debug.LogWarning("Нет живых героев в списке!");
-                return null;
-            }
-            
-            int randomIndex = Random.Range(0, livingHeroes.Count);
-            return livingHeroes[randomIndex];
-        }
+        private void OnDestroy() =>
+            _battleSpawner.OnHeroesSpawned -= InitializeHeroes;
     }
 }
