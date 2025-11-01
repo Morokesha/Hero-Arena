@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 693d76a61b654709bbe9191477cf0659, type: 3}
+  m_Name: SkillIconConfig
+  m_EditorClassIdentifier: Assembly-CSharp::Core.Heroes.Skills.SkillEffectIconConfig
+  meleeAttackDamageIcon: {fileID: 21300000, guid: 70e07ab1b9f326b4bae30fe839d609ea, type: 3}
+  rangeDamageIcon: {fileID: 21300046, guid: 8b8333c8af9b0c54da038fe9102febb5, type: 3}
+  debuffIcon: {fileID: 21300000, guid: beb58d80ece1125479ed57b077003fbf, type: 3}
+  buffIcon: {fileID: 21300000, guid: f2e84bc03ca62ac4eb6b2226e0969eec, type: 3}
+  healCleanseIcon: {fileID: 21300000, guid: 3f341a23c15acab469d1ec140f594b36, type: 3}
+  ultimateIcon: {fileID: 21300000, guid: a80ab5dd274673f4f9dd28776caae0e8, type: 3}
