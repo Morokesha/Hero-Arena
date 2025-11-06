@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Core.Heroes;
 using Core.Heroes.Skills;
 using Services.FactoryServices;
-using UI.CardInBattle;
+using Services.SaveLoadServices;
+using Services.StaticDataServices;
 using UnityEngine;
-using Random = UnityEngine.Random;
+using VContainer;
 
 namespace Core.Battle
 {
@@ -15,34 +15,38 @@ namespace Core.Battle
         private TargetSelector targetSelector;
         [SerializeField] 
         private SkillCardManager skillCardManager;
+        [SerializeField]
+        private BattleSpawner battleSpawner;
         
         private IFactoryUIService _factoryUI;
-        private BattleSpawner _battleSpawner;
         private SkillExecutor _skillExecutor;
-        
+
         private List<Hero> _playerHeroes;
         private List<Hero> _aiHeroes;
-
-        private void Awake()
+        
+        [Inject]
+        public void Construct(IStaticDataService staticDataService, IGameFactoryService gameFactoryService,
+            IFactoryUIService factoryUIService, ISaveLoadService saveLoadService)
         {
             _playerHeroes = new List<Hero>();
             _aiHeroes = new List<Hero>();
-            
             _skillExecutor = new SkillExecutor();
-            _battleSpawner.OnHeroesSpawned += InitializeHeroes;
-        }
-        public void Construct(IFactoryUIService factoryUIService, BattleSpawner battleSpawner)
-        {
-            _factoryUI = factoryUIService;
-            _battleSpawner = battleSpawner;
             
-            skillCardManager.Construct(_factoryUI,_battleSpawner, _skillExecutor, targetSelector);
+            _factoryUI = factoryUIService;
+            
+            battleSpawner.Construct(staticDataService, gameFactoryService, saveLoadService);
+            skillCardManager.Construct(_factoryUI, battleSpawner, _skillExecutor, targetSelector);
+            battleSpawner.OnHeroesSpawned += InitializeHeroes;
+            battleSpawner.SpawnHeroes();
         }
-
+        
         private void InitializeHeroes(List<Hero> playerHeroes, List<Hero> aiHeroes)
         {
             _playerHeroes = playerHeroes;
             _aiHeroes = aiHeroes;
+            
+            Debug.Log($"BattleController InitializeHeroes: Received {_playerHeroes.Count} " +
+                      $"player heroes and {_aiHeroes.Count} AI heroes");
             
             foreach (var hero in playerHeroes)
                 hero.OnDeath += OnHeroDeath;
@@ -55,20 +59,14 @@ namespace Core.Battle
         {
             _playerHeroes.Remove(deadHero);
             _aiHeroes.Remove(deadHero);
-            
+
             if (_playerHeroes.Count == 0)
-            {
                 Debug.Log("Проигрыш");
-                // Логика проигрыша
-            }
-            else if (_aiHeroes.Count == 0)
-            {
+            
+            else if (_aiHeroes.Count == 0) 
                 Debug.Log("Победа");
-                // Логика победы
-            }
         }
 
-        private void OnDestroy() =>
-            _battleSpawner.OnHeroesSpawned -= InitializeHeroes;
+        private void OnDestroy() => battleSpawner.OnHeroesSpawned -= InitializeHeroes;
     }
 }

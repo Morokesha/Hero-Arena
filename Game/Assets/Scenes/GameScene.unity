@@ -129,7 +129,6 @@ GameObject:
   m_Component:
   - component: {fileID: 31022289}
   - component: {fileID: 31022291}
-  - component: {fileID: 31022290}
   - component: {fileID: 31022292}
   m_Layer: 5
   m_Name: Hero Skill Panel
@@ -152,35 +151,11 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 41589344}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 1, y: 0}
-  m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -390, y: 120}
-  m_SizeDelta: {x: 740, y: 200}
+  m_AnchorMin: {x: 0.55, y: 0.006}
+  m_AnchorMax: {x: 0.9874792, y: 0.21755558}
+  m_AnchoredPosition: {x: 0, y: 0.20202637}
+  m_SizeDelta: {x: 0, y: -0.3241}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &31022290
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 31022288}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8a8695521f0d02e499659fee002a26c2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.GridLayoutGroup
-  m_Padding:
-    m_Left: 10
-    m_Right: 0
-    m_Top: 5
-    m_Bottom: 0
-  m_ChildAlignment: 0
-  m_StartCorner: 1
-  m_StartAxis: 0
-  m_CellSize: {x: 116, y: 194}
-  m_Spacing: {x: -15, y: 0}
-  m_Constraint: 0
-  m_ConstraintCount: 2
 --- !u!222 &31022291
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -258,9 +233,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Core.Battle.SkillCardManager
   skillCardPf: {fileID: -4150834210077665634, guid: 3c7c5dbe8b851e14dac99de902307a22, type: 3}
   handContainer: {fileID: 31022289}
-  spawnStartPos: {x: 0, y: -500}
+  spawnOffsetX: -480
   spawnDuration: 0.5
   spreadDistance: 100
+  cardScaleOnSelect: 1.2
+  dragThreshold: 10
 --- !u!1 &73981495
 GameObject:
   m_ObjectHideFlags: 0
@@ -1390,7 +1367,7 @@ MonoBehaviour:
   autoInjectGameObjects: []
   gameBootstrapper: {fileID: 751451336}
   menuController: {fileID: 0}
-  battleSpawner: {fileID: 1922299973}
+  battleController: {fileID: 1193197185}
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -1818,6 +1795,7 @@ MonoBehaviour:
   cursorCanvas: {fileID: 1015927065}
   cursorFillImage: {fileID: 1934666887}
   holdTime: 2
+  holdThreshold: 50
 --- !u!1 &1193197184
 GameObject:
   m_ObjectHideFlags: 0
@@ -1849,6 +1827,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Core.Battle.BattleController
   targetSelector: {fileID: 1153821311}
   skillCardManager: {fileID: 41589345}
+  battleSpawner: {fileID: 1922299973}
 --- !u!4 &1193197186
 Transform:
   m_ObjectHideFlags: 0

@@ -20,7 +20,7 @@ namespace Bootstrap
         private MenuWindowController menuController;
         [Header("Для игровой сцены")]
         [SerializeField]
-        private BattleSpawner battleSpawner;
+        private BattleController battleController;
         
         protected override void Configure(IContainerBuilder builder)
         {
@@ -39,7 +39,8 @@ namespace Bootstrap
             
             if (menuController != null)
                 builder.RegisterComponent(menuController);
-            if (battleSpawner != null) builder.RegisterComponent(battleSpawner);
+            if (battleController != null)
+                builder.RegisterComponent(battleController);
         }
     }
 }
